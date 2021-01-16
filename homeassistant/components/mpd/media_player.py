@@ -11,6 +11,7 @@ import voluptuous as vol
 
 from homeassistant.components.media_player import PLATFORM_SCHEMA, MediaPlayerEntity
 from homeassistant.components.media_player.const import (
+    ATTR_MEDIA_ENQUEUE,
     MEDIA_TYPE_MUSIC,
     MEDIA_TYPE_PLAYLIST,
     REPEAT_MODE_ALL,
@@ -415,14 +416,18 @@ class MpdDevice(MediaPlayerEntity):
             else:
                 self._currentplaylist = None
                 _LOGGER.warning("Unknown playlist name %s", media_id)
-            await self._client.clear()
+            if not kwargs.get(ATTR_MEDIA_ENQUEUE):
+                await self._client.clear()
             await self._client.load(media_id)
-            await self._client.play()
+            if not kwargs.get(ATTR_MEDIA_ENQUEUE):
+                await self._client.play()
         else:
-            await self._client.clear()
+            if not kwargs.get(ATTR_MEDIA_ENQUEUE):
+                await self._client.clear()
             self._currentplaylist = None
             await self._client.add(media_id)
-            await self._client.play()
+            if not kwargs.get(ATTR_MEDIA_ENQUEUE):
+                await self._client.play()
 
     @property
     def repeat(self):
