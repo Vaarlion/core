@@ -20,6 +20,7 @@ from homeassistant.components.http import HomeAssistantView
 from homeassistant.components.media_player.const import (
     ATTR_MEDIA_CONTENT_ID,
     ATTR_MEDIA_CONTENT_TYPE,
+    ATTR_MEDIA_ENQUEUE,
     DOMAIN as DOMAIN_MP,
     MEDIA_TYPE_MUSIC,
     SERVICE_PLAY_MEDIA,
@@ -69,6 +70,7 @@ CONF_FIELDS = "fields"
 DEFAULT_CACHE = True
 DEFAULT_CACHE_DIR = "tts"
 DEFAULT_TIME_MEMORY = 300
+DEFAULT_ENQUEUE = False
 DOMAIN = "tts"
 
 MEM_CACHE_FILENAME = "filename"
@@ -112,6 +114,7 @@ SCHEMA_SERVICE_SAY = vol.Schema(
         vol.Required(ATTR_ENTITY_ID): cv.comp_entity_ids,
         vol.Optional(ATTR_LANGUAGE): cv.string,
         vol.Optional(ATTR_OPTIONS): dict,
+        vol.Optional(ATTR_MEDIA_ENQUEUE, default=DEFAULT_ENQUEUE): cv.boolean,
     }
 )
 
@@ -180,6 +183,7 @@ async def async_setup(hass, config):
             cache = service.data.get(ATTR_CACHE)
             language = service.data.get(ATTR_LANGUAGE)
             options = service.data.get(ATTR_OPTIONS)
+            enqueue = service.data.get(ATTR_MEDIA_ENQUEUE)
 
             try:
                 url = await tts.async_get_url_path(
@@ -196,6 +200,7 @@ async def async_setup(hass, config):
                 ATTR_MEDIA_CONTENT_ID: url,
                 ATTR_MEDIA_CONTENT_TYPE: MEDIA_TYPE_MUSIC,
                 ATTR_ENTITY_ID: entity_ids,
+                ATTR_MEDIA_ENQUEUE: enqueue,
             }
 
             await hass.services.async_call(
